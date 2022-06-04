@@ -288,9 +288,5 @@ end
     TicketingMachine --> User : 発券メッセージ
     deactivate TicketingMachine
 
-
-
-
-
 @enduml
 ```
