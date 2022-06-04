@@ -8,10 +8,11 @@
 ```plantuml
 @startuml
 TicketingMachine o-- ShoppingCart
+TicketingMachine o-- MarchandideMaster
 
 class TicketingMachine {
     shopping_cart : ShoppingCart
-    marchandise_master : Dataframe
+    marchandise_master : MarchandideMaster
     get_menu()
     get_input_amount()
     get_ticketing()
@@ -22,7 +23,7 @@ class TicketingMachine {
     show_current_status()
 }
 
-note right of TicketingMachine::marchandise_master
+note left of TicketingMachine::marchandise_master
     商品マスタのデータフレーム。csvで作成する。
     ・商品カテゴリ(N)
     ・商品名
@@ -31,13 +32,13 @@ note right of TicketingMachine::marchandise_master
     ・価格
 endnote
 
-note right of TicketingMachine::_show_option_menu()
+note left of TicketingMachine::_show_option_menu()
     get_menu()実行時に、
     対象メニューがオプション有りの場合、
     実行される。
 endnote
 
-note right of TicketingMachine::show_current_status()
+note left of TicketingMachine::show_current_status()
     現在の注文一覧、
     投入金額、合計金額、割引金額
     発券可否を表示する。
@@ -57,6 +58,10 @@ class ShoppingCart {
 note right of ShoppingCart::order_list
     商品マスタの1レコードに該当
 endnote
+
+class MarchandideMaster {
+    menu : dict
+}
 
 
 
