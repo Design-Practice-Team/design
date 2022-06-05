@@ -26,10 +26,7 @@ class TicketingMachine {
     get_menu()
     get_input_amount()
     get_ticketing()
-    show_main_menu()
-    show_side1_menu()
-    show_side2_menu()
-    _show_option_menu()
+    show_menu()
     show_current_status()
 }
 
@@ -42,20 +39,6 @@ note left of TicketingMachine::marchandise_master
     ・価格
 endnote
 
-note left of TicketingMachine::show_side1_menu()
-    メニューを選択しない場合のコマンドについても表示する
-endnote
-
-note left of TicketingMachine::show_side2_menu()
-    メニューを選択しない場合のコマンドについても表示する
-endnote
-
-note left of TicketingMachine::_show_option_menu()
-    get_menu()実行時に、
-    対象メニューがオプション有りの場合、
-    実行される。
-endnote
-
 note left of TicketingMachine::show_current_status()
     現在の注文一覧、
     投入金額、合計金額、割引金額
@@ -65,6 +48,7 @@ endnote
 class ShoppingCart {
     order_list : list
     total_amount : int
+    input_amount : int
     discount_amount : int
     change_amount : int
     calculate_total_amount()
@@ -74,11 +58,11 @@ class ShoppingCart {
 }
 
 note right of ShoppingCart::order_list
-    商品マスタの1レコードに該当
+    商品名とその金額の二次元配列
 endnote
 
 class MarchandideMaster {
-    menu : dict
+    menu : Dataframe
 }
 
 @enduml
@@ -136,26 +120,26 @@ activate TicketingMachine
 TicketingMachine -> User : 現在の注文一覧を表示
 deactivate TicketingMachine
 
-Main -> TicketingMachine : show_main_menu()
+Main -> TicketingMachine : show_menu(category="1")
 activate TicketingMachine
 TicketingMachine -> User : メインメニュー一覧を表示
 deactivate TicketingMachine
 
-Main -> TicketingMachine : get_menu("Main")
+Main -> TicketingMachine : get_menu("1")
 activate TicketingMachine
 TicketingMachine -> User : メニュー選択指示
-User --> TicketingMachine : menu_code（int）
+User --> TicketingMachine : menu_id（int）
 
 opt オプション有り
-    TicketingMachine -> TicketingMachine : _show_option_menu()
+    TicketingMachine -> TicketingMachine : show_menu(category="4")
     activate TicketingMachine
     TicketingMachine -> User : オプションメニュー一覧を表示
     deactivate TicketingMachine
 
-    TicketingMachine -> TicketingMachine : get_menu("Option")
+    TicketingMachine -> TicketingMachine : get_menu("4")
     activate TicketingMachine
     TicketingMachine -> User : メニュー選択指示
-    User --> TicketingMachine : menu_code (int)
+    User --> TicketingMachine : option_id (int)
     deactivate TicketingMachine
 end
 
@@ -184,30 +168,30 @@ loop
     TicketingMachine -> User : 現在の注文一覧を表示
     deactivate TicketingMachine
 
-    Main -> TicketingMachine : show_side1_menu()
+    Main -> TicketingMachine : show_menu(category="2")
     activate TicketingMachine
     TicketingMachine -> User : サイドメニュー1一覧を表示
     deactivate TicketingMachine
 
-    Main -> TicketingMachine : get_menu("Side1")
+    Main -> TicketingMachine : get_menu("2")
     activate TicketingMachine
     TicketingMachine -> User : メニュー選択指示
-    User --> TicketingMachine : menu_code（int）
+    User --> TicketingMachine : menu_id（int）
 
     break サイドメニュー1を選択しない
         TicketingMachine --> Main : ループ終了
     end
     
     opt オプション有り
-        TicketingMachine -> TicketingMachine : _show_option_menu()
+        TicketingMachine -> TicketingMachine : show_menu(category="4")
         activate TicketingMachine
         TicketingMachine -> User : オプションメニュー一覧を表示
         deactivate TicketingMachine
 
-        TicketingMachine -> TicketingMachine : get_menu("Option")
+        TicketingMachine -> TicketingMachine : get_menu("4")
         activate TicketingMachine
         TicketingMachine -> User : メニュー選択指示
-        User --> TicketingMachine : menu_code (int)
+        User --> TicketingMachine : option_id (int)
         deactivate TicketingMachine
     end
 end
@@ -237,30 +221,30 @@ loop
     TicketingMachine -> User : 現在の注文一覧を表示
     deactivate TicketingMachine
 
-    Main -> TicketingMachine : show_side2_menu()
+    Main -> TicketingMachine : show_menu(category="2")
     activate TicketingMachine
     TicketingMachine -> User : サイドメニュー1一覧を表示
     deactivate TicketingMachine
 
-    Main -> TicketingMachine : get_menu("Side2")
+    Main -> TicketingMachine : get_menu("3")
     activate TicketingMachine
     TicketingMachine -> User : メニュー選択指示
-    User --> TicketingMachine : menu_code（int）
+    User --> TicketingMachine : menu_id（int）
 
     break サイドメニュー1を選択しない
         TicketingMachine --> Main : ループ終了
     end
 
     opt オプション有り
-        TicketingMachine -> TicketingMachine : _show_option_menu()
+        TicketingMachine -> TicketingMachine : show_menu(category="4")
         activate TicketingMachine
         TicketingMachine -> User : オプションメニュー一覧を表示
         deactivate TicketingMachine
 
-        TicketingMachine -> TicketingMachine : get_menu("Option")
+        TicketingMachine -> TicketingMachine : get_menu("4")
         activate TicketingMachine
         TicketingMachine -> User : メニュー選択指示
-        User --> TicketingMachine : menu_code (int)
+        User --> TicketingMachine : option_id (int)
         deactivate TicketingMachine
     end
 end
