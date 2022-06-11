@@ -1,35 +1,66 @@
 ## 応用情報技術者過去問題 平成31年春期 午後問3
 
 ### 目次
-1. [独自仕様](#original)
-2. [反省点](#reflections)
-3. [TOD0](#todo)
-4. [メモ](#memo)
-5. [クラス図](#class)
-6. [シーケンス図（全体）](#sequence-whole)
-7. [シーケンス図（メインメニュー）](#sequence-main)
-
-<a id="original"></a>
-
-### 独自仕様
-- イベントコードと状態番号のコンソール出力は行わない（ユーザーにとって不要な情報であるため）
-- エラークラスの設計と実装はTBD
-- メインメニュー受付 -> サイドメニュー1受付 -> サイドメニュー2受付 というフローで処理する（問題文の状態遷移図とは処理フローが異なる）
-
-<a id="reflections"></a>
-
-#### 反省点
-
-<a id="todo"></a>
-
-#### TODO 
-- 問題文と仕様が異なっているので、問題文と同等の仕様でチャレンジしていみたい。
+1. [メモ](#memo)
+2. [アクティビティ図](#activity)
+3. [クラス図](#class)
+4. [シーケンス図（全体）](#sequence-whole)
+5. [シーケンス図（メインメニュー）](#sequence-menu)
+6. [シーケンス図（発券処理）](#sequence-ticketing)
 
 <a id="memo"></a>
 
-#### メモ
-- MarchandiseMasterは、本当のシステムならDBになる部分
-- 標準出力のシーケンスの書き方がわからない。これであってるのか。
+### メモ
+- イベントコードと状態番号のコンソール出力は行わない（ユーザーにとって不要な情報であるため）
+- エラークラスの設計と実装はTBD
+- 発券可能条件
+    - メイン商品が一つ選択されていること
+    - オプション商品が選択されていること
+
+<a id="activity"></a>
+
+### アクティビティ図
+#### システム全体のフロー
+```plantuml
+@startuml
+start
+:メインメニューの選択;
+
+if (発券) then (しない)
+
+    while (サイド1を購入する)
+        :サイドメニュー1を選択;
+    endwhile
+
+    if (発券) then (しない)
+        while (サイド2を購入する)
+            :サイドメニュー2を選択;
+        endwhile
+        :発券処理;
+        stop
+    else (する)
+        :発券処理;
+        stop
+    endif
+
+else (する)
+    :発券処理;
+    stop
+endif
+@enduml
+```
+
+#### 発券処理のフロー
+```plantuml
+@startuml
+start
+    repeat
+        :お金を投入;
+    repeat while (投入金額=合計金額)
+    :発券メッセージ;
+stop
+@enduml
+```
 
 <a id="class"></a>
 
@@ -42,11 +73,14 @@ TicketingMachine o-- MarchandiseMaster
 class TicketingMachine {
     shopping_cart : ShoppingCart
     marchandise_master : MarchandiseMaster
-    get_menu()
-    get_input_amount()
-    get_ticketing()
-    show_menu()
-    show_current_status()
+    ask_order()
+    get_order()
+    _get_menu()
+    _show_menu()
+    _show_current_status()
+    ask_ticketing()
+    issue_ticket()
+    _get_input_amount()
 }
 
 note left of TicketingMachine::marchandise_master
@@ -54,20 +88,31 @@ note left of TicketingMachine::marchandise_master
     ・商品カテゴリ
     ・商品名
     ・セットメニュー適用可否フラグ
-    ・オプション品番号
+    ・オプション番号
     ・価格
 end note
 
-note left of TicketingMachine::get_ticketing
-    発券の可否を受け付ける。
-    ShoppingCartインスタンスのis_ticketing変数を参照し、
-    発券可能なら、発券指示を受け付ける。
+note left of TicketingMachine::ask_order()
+    ユーザーに注文の要否を問い合わせる。
+    その結果をboolで返す
+end note 
+
+note left of TicketingMachine::_show_current_status()
+    現在の注文一覧、
+    合計金額、割引金額
+    を表示する。
 end note
 
-note left of TicketingMachine::show_current_status()
-    現在の注文一覧、
-    投入金額、合計金額、割引金額
-    を表示する。
+note left of TicketingMachine::ask_ticketing()
+    ユーザーに発券要否を問い合わせる。
+    その結果をboolで返す
+end note
+
+note left of TicketingMachine::issue_ticket
+    発券処理をする。
+    1.ユーザーに発券の要否を確認
+    2.発券する場合は、お金の投入を促す
+    3.発券し、システム終了
 end note
 
 class ShoppingCart {
@@ -78,7 +123,6 @@ class ShoppingCart {
     is_ticketing: bool
     calculate_total_amount()
     calculate_set_discount()
-    check_ticketing()
 }
 
 note left of ShoppingCart::order_list
@@ -129,144 +173,67 @@ deactivate TicketingMachine
 
 
 ' メインメニューの選択
-
 ref over User, Main, TicketingMachine, ShoppingCart
-    メインメニューの選択
+    各メニュー受付（メインメニュー）
 end ref
 
-
-' サイドメニュー1の選択
-note over Main : サイドメニュー1の選択
-loop 
-    Main -> ShoppingCart : calculate_total_amount()
-    activate ShoppingCart
-    ShoppingCart --> Main : total_amount[int]
-    deactivate ShoppingCart
-
-    Main -> ShoppingCart : calculate_set_discount()
-    activate ShoppingCart
-    ShoppingCart --> Main : discount_amount[int]
-    deactivate ShoppingCart
-
-    Main -> ShoppingCart : is_ticketing
-    activate ShoppingCart
-    ShoppingCart --> Main : ticketing_flag[bool]
-    deactivate ShoppingCart
-
-    Main -> TicketingMachine : show_current_status()
-    activate TicketingMachine
-    TicketingMachine -> User : 現在の注文一覧を表示
-    deactivate TicketingMachine
-
-    Main -> TicketingMachine : show_menu(category="2")
-    activate TicketingMachine
-    TicketingMachine -> User : サイドメニュー1一覧を表示
-    deactivate TicketingMachine
-
-    Main -> TicketingMachine : get_menu("2")
-    activate TicketingMachine
-    TicketingMachine -> User : メニュー選択指示
-    User --> TicketingMachine : menu_id（int）
-
-    break サイドメニュー1を選択しない
-        TicketingMachine --> Main : ループ終了
-    end
-    
-    opt オプション有り
-        TicketingMachine -> TicketingMachine : show_menu(category="4")
-        activate TicketingMachine
-        TicketingMachine -> User : オプションメニュー一覧を表示
-        deactivate TicketingMachine
-
-        TicketingMachine -> TicketingMachine : get_menu("4")
-        activate TicketingMachine
-        TicketingMachine -> User : メニュー選択指示
-        User --> TicketingMachine : option_id (int)
-        deactivate TicketingMachine
-    end
-end
-
+Main -> TicketingMachine : check_ticketing()
+activate TicketingMachine
+TicketingMachine -> User : 発券要否の確認
+User --> TicketingMachine : 発券指示（yes/no）（str）
 deactivate TicketingMachine
 
-' サイドメニュー2の選択
-note over Main : サイドメニュー2の選択
-loop 
-    Main -> ShoppingCart : calculate_total_amount()
-    activate ShoppingCart
-    ShoppingCart --> Main : total_amount[int]
-    deactivate ShoppingCart
-
-    Main -> ShoppingCart : calculate_set_discount()
-    activate ShoppingCart
-    ShoppingCart --> Main : discount_amount[int]
-    deactivate ShoppingCart
-
-    Main -> ShoppingCart : is_ticketing
-    activate ShoppingCart
-    ShoppingCart --> Main : ticketing_flag[bool]
-    deactivate ShoppingCart
-
-    Main -> TicketingMachine : show_current_status()
-    activate TicketingMachine
-    TicketingMachine -> User : 現在の注文一覧を表示
-    deactivate TicketingMachine
-
-    Main -> TicketingMachine : show_menu(category="2")
-    activate TicketingMachine
-    TicketingMachine -> User : サイドメニュー1一覧を表示
-    deactivate TicketingMachine
-
-    Main -> TicketingMachine : get_menu("3")
-    activate TicketingMachine
-    TicketingMachine -> User : メニュー選択指示
-    User --> TicketingMachine : menu_id（int）
-
-    break サイドメニュー1を選択しない
-        TicketingMachine --> Main : ループ終了
-    end
-
-    opt オプション有り
-        TicketingMachine -> TicketingMachine : show_menu(category="4")
+alt is_ticketing = True
+    ref over User, Main, TicketingMachine, ShoppingCart
+        発券処理
+    end ref
+else is_ticketing = False
+    ' サイドメニュー1の選択
+    loop ask_order() = True
+        Main -> TicketingMachine : ask_order()
         activate TicketingMachine
-        TicketingMachine -> User : オプションメニュー一覧を表示
+        TicketingMachine -> User : 注文の要否を確認
+        User --> TicketingMachine : 注文指示（yes/no）（str）
         deactivate TicketingMachine
-
-        TicketingMachine -> TicketingMachine : get_menu("4")
-        activate TicketingMachine
-        TicketingMachine -> User : メニュー選択指示
-        User --> TicketingMachine : option_id (int)
-        deactivate TicketingMachine
-    end
+        ref over User, Main, TicketingMachine, ShoppingCart
+            各メニュー受付（サイドメニュー1）
+        end ref
+    end 
 end
 
+Main -> TicketingMachine : check_ticketing()
+activate TicketingMachine
+TicketingMachine -> User : 発券要否の確認
+User --> TicketingMachine : 発券指示（yes/no）（str）
 deactivate TicketingMachine
 
-' 支払い
-note over Main : 支払い
-loop
-    Main -> TicketingMachine : show_current_status()
-    activate TicketingMachine
-    TicketingMachine -> User : 現在の注文一覧を表示
-    deactivate TicketingMachine
-
-    Main -> TicketingMachine : get_input_amount()
-    activate TicketingMachine
-    break calculate_change_amount() >= 0
-        TicketingMachine --> Main : ループ終了
-    end
-    deactivate TicketingMachine
+alt is_ticketing = True
+    ref over User, Main, TicketingMachine, ShoppingCart
+        発券処理
+    end ref
+else is_ticketing = False
+    ' サイドメニュー2の選択
+    loop ask_order() = True
+        Main -> TicketingMachine : ask_order()
+        activate TicketingMachine
+        TicketingMachine -> User : 注文の要否を確認
+        User --> TicketingMachine : 注文指示（yes/no）（str）
+        deactivate TicketingMachine
+        ref over User, Main, TicketingMachine, ShoppingCart
+            各メニュー受付（サイドメニュー2）
+        end ref
+    end 
 end
 
-    Main -> TicketingMachine : get_ticketing()
-    activate TicketingMachine
-    TicketingMachine --> User : 発券メッセージ
-    deactivate TicketingMachine
+ref over User, Main, TicketingMachine, ShoppingCart
+    発券処理
+end ref
 
 @enduml
 ```
-<a id="sequence-main"></a>
+<a id="sequence-menu"></a>
 
-### シーケンス図（メインメニュー受付）
+### シーケンス図（各メニュー受付）
 ```plantuml
 @startuml
 actor User
@@ -276,61 +243,68 @@ participant ShoppingCart
 
 activate Main
 
-Main -> TicketingMachine : show_current_status()
+Main -> TicketingMachine : get_order(category(1~3))
 activate TicketingMachine
-TicketingMachine -> User : 現在の注文一覧を表示
-deactivate TicketingMachine
-
-Main -> TicketingMachine : show_menu(category="1")
-activate TicketingMachine
-TicketingMachine -> User : メインメニュー一覧を表示
-deactivate TicketingMachine
-
-Main -> TicketingMachine : get_menu("1")
-activate TicketingMachine
-TicketingMachine -> User : メニュー選択指示
-User --> TicketingMachine : menu_id（str）
-opt オプション有り
-    TicketingMachine -> TicketingMachine : show_menu(category="4")
+    TicketingMachine -> TicketingMachine : _show_menu(category(1~3))
     activate TicketingMachine
-    TicketingMachine -> User : オプションメニュー一覧を表示
+    TicketingMachine -> User : メインメニュー一覧を表示
     deactivate TicketingMachine
 
-    TicketingMachine -> TicketingMachine : get_menu("4")
+    TicketingMachine -> TicketingMachine : _get_menu(category(1~3))
     activate TicketingMachine
     TicketingMachine -> User : メニュー選択指示
-    User --> TicketingMachine : option_id (str)
-    deactivate TicketingMachine
-end
-deactivate TicketingMachine
+    User --> TicketingMachine : menu_id（str）
 
-Main -> ShoppingCart : calculate_total_amount()
-activate ShoppingCart
-ShoppingCart --> Main : total_amount[int]
-deactivate ShoppingCart
+    opt オプション有り
+        TicketingMachine -> TicketingMachine : _show_menu(category="4")
+        activate TicketingMachine
+        TicketingMachine -> User : オプションメニュー一覧を表示
+        deactivate TicketingMachine
 
-Main -> TicketingMachine : get_input_amount()
-activate TicketingMachine
-TicketingMachine -> User : 投入金額入力指示
-User --> TicketingMachine : 投入金額（str）
-deactivate TicketingMachine
-
-Main -> ShoppingCart : check_ticketing（）
-
-Main -> TicketingMachine : get_ticketing()
-activate TicketingMachine
-opt is_ticketing == True
-    TicketingMachine -> User : 発券指示の確認
-    User --> TicketingMachine : 発券指示（yes / no）
-    alt 発券指示 == yes
-        TicketingMachine -> User : システム終了
-    else
-        TicketingMachine -> User : 注文継続の通知
+        TicketingMachine -> TicketingMachine : _get_menu("4")
+        activate TicketingMachine
+        TicketingMachine -> User : メニュー選択指示
+        User --> TicketingMachine : option_id (str)
+        deactivate TicketingMachine
     end
-end opt
-deactivate TicketingMachine
+    deactivate TicketingMachine
+
+    TicketingMachine -> ShoppingCart : calculate_total_amount()
+    TicketingMachine -> ShoppingCart : calculate_set_discount()
+
+    TicketingMachine -> TicketingMachine : show_current_status()
+    activate TicketingMachine
+    TicketingMachine -> User : 現在の注文と金額情報を表示
+    deactivate TicketingMachine
+
+    deactivate TicketingMachine
 
 deactivate Main
+
+@enduml
+```
+
+<a id="sequence-ticketing"></a>
+
+### シーケンス図（発券処理）
+```plantuml
+@startuml
+actor User
+control Main
+participant TicketingMachine
+
+Main -> TicketingMachine : issue_ticket()
+activate TicketingMachine
+loop 投入金額合計 >= 合計金額
+    TicketingMachine -> TicketingMachine : _get_input_amount()
+    activate TicketingMachine
+    TicketingMachine -> User : 金額の投入指示
+    User --> TicketingMachine : 投入金額（int）
+    deactivate TicketingMachine
+end
+TicketingMachine -> User : 発券メッセージ（システム終了）
+deactivate TicketingMachine
+
 
 @enduml
 ```

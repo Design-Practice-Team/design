@@ -3,6 +3,7 @@ import pprint
 
 
 class MarchandideMaster:
+    OPTION_NUM = "4"
     MARCHANDISE_MASTER = pd.DataFrame(
         columns=["ID", "Category", "Name", "Set", "Option", "Price"],
         data=[
@@ -28,21 +29,62 @@ class MarchandideMaster:
 
 class ShoppingCart:
     def __init__(self):
-        self.order_list = []
+        self.order_df = pd.DataFrame(columns=[], data=[])
         self.total_amount = 0
         self.input_amount = 0
         self.discount_amount = 0
         self.change_amount = 0
 
+    def calculate_total_amount(self):
+        """
+        現在の合計金額を算出するメソッド
+
+        Args:
+            なし
+        Return:
+            なし
+        """
+        self.total_amount = self.order_df["Price"].sum()
+
+    # def calculate_set_discount(self):
+    #     """
+    #     現在の割引金額を算出するメソッド
+
+    #     Args:
+    #         なし
+    #     Return:
+    #         なし
+    #     """
+
 
 class TicketingMachine:
-    def __init__(self, shopping_cart, marchandise_master):
-        self.shopping_cart = shopping_cart
-        self.marchandise_master = marchandise_master
+    INDEX_0 = 0
 
-    def show_menu(self, category):
+    def __init__(self, shopping_cart, marchandise_master):
+        self.sc = shopping_cart
+        self.mm = marchandise_master
+
+    def get_order(self, category):
         """
-        メインメニューの一覧を標準出力する。
+        ユーザーからの注文を取得するメソッド
+
+        Args:
+            category(str) : 商品の分類番号
+        Return:
+            なし
+        """
+
+        self._show_menu(category)
+        self._get_menu(category)
+
+        self.sc.calculate_total_amount()
+        # self.shopping_cart.calculate_set_discount()
+
+        self._show_current_status()
+
+    def _show_menu(self, category):
+        """
+        商品の分類番号に応じた、メニューの一覧を標準出力する。
 
         Args:
             category(str) : 商品の分類番号
@@ -53,12 +95,12 @@ class TicketingMachine:
         pd.set_option("display.unicode.east_asian_width", True)
 
         print(
-            self.marchandise_master.query(f'Category == "{category}"')[
+            self.mm.MARCHANDISE_MASTER.query(f'Category == "{category}"')[
                 ["ID", "Name", "Price"]
             ]
         )
 
-    def show_current_status(self):
+    def _show_current_status(self):
         """
         現在の注文一覧、投入金額、合計金額、割引金額を標準出力する。
 
@@ -68,7 +110,7 @@ class TicketingMachine:
             なし
         """
         print("現在の注文一覧")
-        pprint.pprint(self.shopping_cart.order_list)
+        pprint.pprint(self.shopping_cart.order_df)
 
         print("投入金額")
         print(self.shopping_cart.input_amount)
@@ -79,7 +121,7 @@ class TicketingMachine:
         print("割引金額")
         print(self.shopping_cart.discount_amount)
 
-    def get_menu(self, category):
+    def _get_menu(self, category):
         """
         ユーザーからのメニューID値の入力を受け付ける.
 
@@ -92,27 +134,22 @@ class TicketingMachine:
             ※本物の券売機では、UIでユーザーの行動を制限する思うので、入力値の検証は不要
             余力があったら実装する。
         """
-        menu_id = input("メニュー番号を入力してください: ")
+        menu_id = input("メニューIDを入力してください: ")
 
-        # TODO menu_idの検証
-
-        # メニュー名と価格の取得（必ず1レコード返ってくる想定。1レコード目のみを取得）
-        menu = self.marchandise_master.MARCHANDISE_MASTER.query(f'ID == "{menu_id}"')[
-            ["Name", "Price", "Option"]
-        ].to_dict(orient="index")[0]
-
-        self.shopping_cart.order_list.append([menu["Name"], menu["Price"]])
+        # TODO menu_idの検証をここで行う
+        # メニュー名と価格の取得
+        menu = self.mm.MARCHANDISE_MASTER.query(f'ID == "{menu_id}"')
+        self.sc.order_df.append(menu)
 
         # オプション品の受付と追加
-        if menu["Option"] != 0:
-            self.show_menu("4")
-            option_id = input("オプション品のメニュー番号を入力してください: ")
+        if menu.at[self.INDEX_0, "Option"] != 0:
+            # TODO 上記で選択したメニューに関連するおオプション品だけ表示するようにする.
+            self._show_menu(self.mm.OPTION_NUM)
+            option_id = input("オプション品のメニューIDを入力してください: ")
 
             # TODO menu_idの検証をここで行う
-            option = self.marchandise_master.MARCHANDISE_MASTER.query(
-                f'ID == "{menu_id}"'
-            )[["Name", "Price"]].to_dict(orient="index")[0]
-            self.shopping_cart.order_list.append([option["Name"], option["Price"]])
+            option = self.mm.MARCHANDISE_MASTER.query(f'ID == "{option_id}"')
+            self.sc.order_df.append(option)
 
     def get_input_amount(self):
         """
