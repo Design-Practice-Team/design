@@ -177,6 +177,7 @@ class TicketingMachine:
         # オプション品の受付と追加
         if menu.iat[self.INDEX_0, self.OPTION_COL_NUM] != 0:
             self._show_option(menu.iat[self.INDEX_0, self.OPTION_COL_NUM])
+            print("---------------------------------")
             option_id = input("オプション品のメニューIDを入力してください: ")
 
             # TODO menu_idの検証をここで行う
