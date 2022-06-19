@@ -2,11 +2,12 @@
 
 ### 目次
 1. [メモ](#memo)
-2. [アクティビティ図](#activity)
-3. [クラス図](#class)
-4. [シーケンス図（全体）](#sequence-whole)
-5. [シーケンス図（メインメニュー）](#sequence-menu)
-6. [シーケンス図（発券処理）](#sequence-ticketing)
+2. [ユースケース図](#usecase)
+3. [アクティビティ図](#activity)
+4. [クラス図](#class)
+5. [シーケンス図（全体）](#sequence-whole)
+6. [シーケンス図（メインメニュー）](#sequence-menu)
+7. [シーケンス図（発券処理）](#sequence-ticketing)
 
 <a id="memo"></a>
 
@@ -16,6 +17,23 @@
 - 発券可能条件
     - メイン商品が一つ選択されていること
     - オプション商品が選択されていること
+
+<a id="usecase"></a>
+
+### ユースケース図
+```plantuml
+@startuml
+actor :買い物客: as shopper
+usecase 商品を選択する
+usecase 発券する
+usecase お金を投入する
+
+shopper --> 商品を選択する
+shopper --> 発券する
+shopper --> お金を投入する
+
+@enduml
+```
 
 <a id="activity"></a>
 

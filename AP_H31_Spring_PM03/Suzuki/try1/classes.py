@@ -213,7 +213,7 @@ class TicketingMachine:
         Return:
             なし
         """
-        while self.sc.input_amount < self.sc.total_amount:
+        while self.sc.input_amount < (self.sc.total_amount - self.sc.discount_amount):
             self._show_current_status()
             self.get_input_amount()
 
