@@ -13,31 +13,31 @@ def main():
 
     mm = classes.MarchandideMaster()
     sc = classes.ShoppingCart()
-    tm = classes.TicketingMachine(sc, mm)
+    ui = classes.UserInterface(sc, mm)
 
     """
     メインメニューの注文
     """
-    tm.get_order(category=mm.MAIN_NUM)
-    if tm.ask_yes_or_no(tm.MESSAGE_ASK_TICKETING):
-        tm.issue_ticket()
+    ui.get_order(category=mm.MAIN_NUM)
+    if ui.ask_yes_or_no(ui.MESSAGE_ASK_TICKETING):
+        ui.issue_ticket()
 
     """
     サイドメニュー1の注文
     """
-    while tm.ask_yes_or_no(tm.MESSAGE_ASK_ORDER_SIDE1) == True:
-        tm.get_order(category=mm.SIDE1_NUM)
+    while ui.ask_yes_or_no(ui.MESSAGE_ASK_ORDER_SIDE1) == True:
+        ui.get_order(category=mm.SIDE1_NUM)
 
-    if tm.ask_yes_or_no(tm.MESSAGE_ASK_TICKETING):
-        tm.issue_ticket()
+    if ui.ask_yes_or_no(ui.MESSAGE_ASK_TICKETING):
+        ui.issue_ticket()
 
     """
     サイドメニュー2の注文
     """
-    while tm.ask_yes_or_no(tm.MESSAGE_ASK_ORDER_SIDE2) == True:
-        tm.get_order(category=mm.SIDE2_NUM)
+    while ui.ask_yes_or_no(ui.MESSAGE_ASK_ORDER_SIDE2) == True:
+        ui.get_order(category=mm.SIDE2_NUM)
 
-    tm.issue_ticket()
+    ui.issue_ticket()
 
 
 if __name__ == "__main__":

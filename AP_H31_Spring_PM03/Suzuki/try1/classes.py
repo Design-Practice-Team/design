@@ -67,7 +67,7 @@ class ShoppingCart:
             self.discount_amount = MarchandideMaster.DISCOUNT_PRICE
 
 
-class TicketingMachine:
+class UserInterface:
     INDEX_0 = 0
     OPTION_COL_NUM = 4
     MESSAGE_ASK_TICKETING = "発券しますか？(yes/no): "
