@@ -1,25 +1,30 @@
+## メモ
+AでもBでもない、異なる種類のピザを作りたくなった時、新規でFactoryクラスを作成する
+
+
+## クラス図
 ```plantuml
 @startuml
 
 AbstractPizzaFactory <|-- FactoryA
 AbstractPizzaFactory <|-- FactoryB
 
-Dough <|-- WheatDough
-Dough <|-- RiceDough
+Dough <|-up- WheatDough
+Dough <|-up- RiceDough
 
-Sauce <|-- TomatoSauce
-Sauce <|-- BasilSauce
+Sauce <|-up- TomatoSauce
+Sauce <|-up- BasilSauce
 
-Topping <|-- CornTopping
-Topping <|-- CheeseTopping
+Topping <|-up- CornTopping
+Topping <|-up- CheeseTopping
 
-WheatDough <.. FactoryA
-TomatoSauce <.. FactoryA
-CornTopping <.. FactoryA
+WheatDough <.up. FactoryA
+TomatoSauce <.up. FactoryA
+CornTopping <.up. FactoryA
 
-RiceDough <.. FactoryB
-BasilSauce <.. FactoryB
-CheeseTopping <.. FactoryB
+RiceDough <.up. FactoryB
+BasilSauce <.up. FactoryB
+CheeseTopping <.up. FactoryB
 
 
 class AbstractPizzaFactory {
@@ -31,10 +36,6 @@ class AbstractPizzaFactory {
     + add_add_topping(void) : void
 }
 
-note left of AbstractPizzaFactory
-    インスタンスオブジェクトを
-    生成する抽象クラス。
-end note
 
 class FactoryA {
     + add_dough(amount : int) : WheatDough
@@ -86,3 +87,5 @@ class CheeseTopping {
 
 @enduml
 ```
+
+## シーケンス図
