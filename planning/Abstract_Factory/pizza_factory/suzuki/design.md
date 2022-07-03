@@ -58,11 +58,11 @@ class Dough {
 }
 
 class WheatDough {
-    + check(amount: int) : void
+    + check() : void
 }
 
 class RiceDough {
-    + check(amount: int) : void
+    + check() : void
 }
 
 class Sauce {
@@ -70,11 +70,11 @@ class Sauce {
 }
 
 class TomatoSauce {
-    + check(amount: int) : void
+    + check() : void
 }
 
 class BasilSauce {
-    + check(amount: int) : void
+    + check() : void
 }
 
 class Topping {
@@ -82,11 +82,11 @@ class Topping {
 }
 
 class CornTopping {
-    + check(amount: int) : void
+    + check() : void
 }
 
 class CheeseTopping {
-    + check(amount: int) : void
+    + check() : void
 }
 
 note "各素材クラスのcheckメソッド：\nそれぞれの素材名と分量を示した文字列を標準出力する" as n1
@@ -114,7 +114,7 @@ activate Main
     create AbstractPizzaFactory
     Main -> AbstractPizzaFactory : AbstractPizzaFactory(Factory)
 
-    Main -> AbstractPizzaFactory : make_pizza("high")
+    Main -> AbstractPizzaFactory : make_pizza(volume)
     activate AbstractPizzaFactory
         AbstractPizzaFactory -> AbstractPizzaFactory : amount(int)
 
